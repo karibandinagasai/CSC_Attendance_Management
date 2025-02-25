@@ -1,63 +1,74 @@
 import streamlit as st
 import pandas as pd
+import os
 from datetime import datetime
 
+# 📌 Ensure correct file paths for CSV loading
+def get_csv_path(filename):
+    return os.path.join(os.path.dirname(__file__), filename)
 
-# Load student data from CSV files
-@st.cache_data
+# 📌 Load student data dynamically
+@st.cache_data(ttl=0)  # Ensures fresh reloads every time
 def load_students():
     try:
-        df_cscha = pd.read_csv("Students_Names_k14CSCHA.csv")  # Ensure correct filename
-        df_cscda = pd.read_csv("Students_Names_k14CSCDA.csv")
+        df_cscha = pd.read_csv(get_csv_path("Students_Names_k14CSCHA.csv"), encoding="utf-8")
+        df_cscda = pd.read_csv(get_csv_path("Students_Names_k14CSCDA.csv"), encoding="utf-8")
         return {"k14CSCHA": df_cscha, "k14CSCDA": df_cscda}
     except FileNotFoundError:
         return {"k14CSCHA": pd.DataFrame(columns=["Roll Number", "Name"]),
                 "k14CSCDA": pd.DataFrame(columns=["Roll Number", "Name"])}
 
-
-# Load or create attendance data
+# 📌 Load or create attendance data
 def load_attendance():
     try:
-        return pd.read_excel("attendance.xlsx")
+        return pd.read_excel(get_csv_path("attendance.xlsx"))
     except FileNotFoundError:
         return pd.DataFrame(columns=["Date", "Class", "Roll Number", "Student Name", "Attendance"])
 
-
-# Save attendance data
+# 📌 Save attendance data
 def save_attendance(df):
-    df.to_excel("attendance.xlsx", index=False)
+    df.to_excel(get_csv_path("attendance.xlsx"), index=False)
 
-
-# Load student lists
+# 📌 Load student lists
 students_data = load_students()
 
-# Streamlit UI
+# 📌 Streamlit UI
 st.title("📌 Class-Wise Attendance System")
 st.write("Mark and save attendance for your students.")
 
-# Select Class
-class_selected = st.selectbox("Select Class", ["k14CSCHA", "k14CSCDA"])
+# 📌 Select Class
+class_selected = st.selectbox("Select Class", list(students_data.keys()))
 
-# Get student list based on selected class
+# 📌 Get student list based on selected class
 df_students = students_data[class_selected]
 
-# Select Date
+# 📌 Debugging: Display column names if error persists
+st.write("🔍 CSV Columns:", df_students.columns.tolist())
+
+# 📌 Ensure correct column names exist
+expected_columns = ["Roll Number", "Name"]
+for col in expected_columns:
+    if col not in df_students.columns:
+        st.error(f"❌ Column '{col}' not found in {class_selected} CSV file! Please check the file format.")
+        st.stop()
+
+# 📌 Select Date
 date = st.date_input("Select Date", datetime.today())
 
-# Mark Attendance
+# 📌 Mark Attendance
 attendance_dict = {}
 for _, row in df_students.iterrows():
     student_name = f"{row['Roll Number']} - {row['Name']}"
     attendance_dict[student_name] = st.checkbox(student_name)
 
-# Save Attendance Button
+# 📌 Save Attendance Button
 if st.button("Save Attendance"):
-    attendance_records = [{"Date": date, "Class": class_selected,
-                           "Roll Number": row.split(" - ")[0],
-                           "Student Name": row.split(" - ")[1],
+    attendance_records = [{"Date": date, "Class": class_selected, 
+                           "Roll Number": row.split(" - ")[0], 
+                           "Student Name": row.split(" - ")[1], 
                            "Attendance": "Present" if present else "Absent"}
                           for row, present in attendance_dict.items()]
-
+    
     df_attendance = load_attendance()
     new_df = pd.DataFrame(attendance_records)
     updated_df = pd.concat([df_attendance, new_df], ignore_index=True)
@@ -65,7 +76,7 @@ if st.button("Save Attendance"):
 
     st.success(f"✅ Attendance saved successfully for {class_selected}!")
 
-# Display Past Attendance
+# 📌 Display Past Attendance
 st.subheader(f"📅 Past Attendance Records - {class_selected}")
 df_attendance = load_attendance()
 filtered_df = df_attendance[df_attendance["Class"] == class_selected]
