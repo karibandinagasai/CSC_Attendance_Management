@@ -67,7 +67,7 @@ Feel free to **fork this repository**, **add improvements**, and create a **pull
 
 ## 📧 Contact
 
-For any queries or suggestions, contact **[EMAIL](mailto\:karibandinagasai7@example.com)** or visit [GitHub](https://github.com/karibandinagasai/CSC-Attendance-Management).
+For any queries or suggestions, contact **[EMAIL](mailto\:karibandinagasai7@gmail.com)** or visit [GitHub](https://github.com/karibandinagasai/CSC-Attendance-Management).
 
 ---
 
