@@ -33,7 +33,7 @@ def save_attendance(df):
 students_data = load_students()
 
 # 📌 Streamlit UI
-st.title("📌 Class-Wise Attendance System")
+st.title("📌 4th Year Cyber Security Class-Wise Attendance System")
 st.write("Mark and save attendance for your students.")
 
 # 📌 Select Class
